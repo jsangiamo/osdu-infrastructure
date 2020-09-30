@@ -41,18 +41,23 @@ GitOps design [specifications](../../../docs/osdu/GITOPS_DESIGN.md).
 Cloud administrators who are versed with both Cobalt templating and Kubernetes.
 
 ## What You Will Need
-1. A target Azure subscription into which you will deploy.
 1. Local environment variables [setup](docs/setup-environment-variables.md).
+1. A target Azure subscription into which you will deploy. Take this subscription's id from within the Azure Portal and use it to fill `ARM_SUBSCRIPTION_ID` in your .envrc file.
 1. A Service Principal that (1) has Azure Active Directory Graphy app role Application.ReadWrite.OwnedBy granted with admin consent and (2) is granted owner level role assignment in target subscription. You should then take this service principal information and use it to fill in the section under "Terraform Service Principal Info" in your .envrc file.
 1. Azure Storage Account that is [setup](https://docs.microsoft.com/en-us/azure/terraform/terraform-backend) to store Terraform state (you only need to complete the steps under "Configure Storage Account"). You should take this information and fill in the section under "Terraform State Storage Info" in your .envrc file.
 1. A keyvault that you create in the Azure Portal. You may choose to put this key vault into the resource group you created for your terraform state. You should take the name of this keyvault and use it to fill in `SSH_VAULT_NAME` in your .envrc file. 
+1. A 6.8.x Elasticsearch instance with a valid ssl certificate for https. You can take the endpoint, username, and password for this instance use them to fill in `TF_VAR_elasticsearch_endpoint`, `TF_VAR_elasticsearch_username`, and `TF_VAR_elasticsearch_password` respectively in your .envrc file.
 1. An Ubuntu terminal. Windows users can install the [Ubuntu Terminal](https://www.microsoft.com/store/productId/9NBLGGH4MSV6) from the Microsoft Store. The Ubuntu Terminal enables Linux command-line utilities, including bash, ssh, and git that will be useful for the following deployment. _Note: You will need the Windows Subsystem for Linux installed to use the Ubuntu Terminal on Windows_.
 1. Required software installed via the Ubuntu terminal:
     * Terraform 0.12.28
     * Go version 1.12.14
     * TODO: Figure out helm and kubectl versions
     * Azure CLI
-## Deployment Steps
+
+## Cost
+Azure environment cost ballpark [estimate](https://azure.microsoft.com/en-us/pricing/calculator/?shared-estimate=61d8d0ef1644470c9c23d6d51796b4b7). This is subject to change and is driven from the resource pricing tiers configured when the template is deployed.
+## Deploying the OSDU Infrastructure
+See instructions [here](docs/infrastructure-instructions.md)
 This section containts the steps required to deploy OSDU into Azure.
 
 ### Deplyoing the Infrastructure: Creating Flux Repository
