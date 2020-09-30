@@ -12,16 +12,29 @@ Technical design [specifications](docs/aks-environment.md)
 GitOps design [specifications](../../../docs/osdu/GITOPS_DESIGN.md).
 
 ## Cloud Resource Architecture
+<details>
+  <summary>Click to see diagram</summary>
 
-![Architecture](./docs/images/architecture.png "Architecture")
+  ![Architecture](./docs/images/architecture.png "Architecture")
+
+</details>
 
 ## Resource Topology
 
+<details>
+  <summary>Click to see diagram</summary>
+
 ![Resource Topology](./docs/images/topology.png "Resource Topology")
 
+</details>
+
 ## Terraform Template Topology
+<details>
+  <summary>Click to see diagram</summary>
 
 ![Template Topology](./docs/images/template.png "Terraform Template Topology")
+
+</details>
 
 ## Intended audience
 
