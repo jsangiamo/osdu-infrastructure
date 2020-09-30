@@ -27,58 +27,36 @@ GitOps design [specifications](../../../docs/osdu/GITOPS_DESIGN.md).
 
 Cloud administrators who are versed with both Cobalt templating and Kubernetes.
 
-## Prerequisites
+## What You Will Need
+1. A target Azure subscription into which you will deploy.
+1. Local environment variables [setup](docs/setup-environment-variables.md).
+1. A Service Principal that (1) has Azure Active Directory Graphy app role Application.ReadWrite.OwnedBy granted with admin consent and (2) is granted owner level role assignment in target subscription. You should then take this service principal information and use it to fill in the section under "Terraform Service Principal Info" in your .envrc file.
+1. Azure Storage Account that is [setup](https://docs.microsoft.com/en-us/azure/terraform/terraform-backend) to store Terraform state (you only need to complete the steps under "Configure Storage Account"). You should take this information and fill in the section under "Terraform State Storage Info" in your .envrc file.
+1. A keyvault that you create in the Azure Portal. You may choose to put this key vault into the resource group you created for your terraform state. You should take the name of this keyvault and use it to fill in `SSH_VAULT_NAME` in your .envrc file. 
+1. An Ubuntu terminal. Windows users can install the [Ubuntu Terminal](https://www.microsoft.com/store/productId/9NBLGGH4MSV6) from the Microsoft Store. The Ubuntu Terminal enables Linux command-line utilities, including bash, ssh, and git that will be useful for the following deployment. _Note: You will need the Windows Subsystem for Linux installed to use the Ubuntu Terminal on Windows_.
+1. Required software installed via the Ubuntu terminal:
+    * Terraform 0.12.28
+    * Go version 1.12.14
+    * TODO: Figure out helm and kubectl versions
+    * Azure CLI
+## Deployment Steps
+This section containts the steps required to deploy OSDU into Azure.
 
-1. Azure Subscription
-1. An available Service Principal with API Permissions granted with Admin Consent within Azure app registration. The required Azure Active Directory Graph app role is `Application.ReadWrite.OwnedBy`
-![image](../../../docs/osdu/images/service_principal_permissions.png)
-1. Terraform and Go are locally installed
-1. Azure Storage Account is [setup](https://docs.microsoft.com/en-us/azure/terraform/terraform-backend) to store Terraform state
-1. Local environment variables are [setup](docs/setup-environment-variables.md)
-1. Deployment Service Principal is granted Owner level role assignment for the target Azure subscription
-![image](../../../docs/osdu/images/service_principal.png)
-1. Enroll as an Azure subscriber. The free trial subscription does not support enough cores to run this tutorial.
-1. Terraform `common_resources` environment module is [provisoned](configurations/common_resources/README.md) to your Azure Environment
-1. Terraform `data_resources` environment module is [provisoned](configurations/data_resources/README.md) to your Azure Environment
-1. Install the required common tools (kubectl, helm, and terraform). See also [Required Tools](https://github.com/microsoft/bedrock/tree/master/cluster). Note: this tutorial currently uses [Terraform 0.12.28](https://releases.hashicorp.com/terraform/0.12.28/).
+### Deplyoing the Infrastructure: Creating Flux Repository
+In this section you will be creating an empty GitHub repository. Once your Kubernetes cluster is deployed later in this guide, it will be configured to watch this repository. Once the cluster is deployed, as you push helm charts to this repository the service those charts represent will be deployed into your cluster.
 
-### Install the required tooling
+If you are going to be using ADO to create CI/CD pipelines for your OSDU deployment, you can follow [these](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-new-repo?view=azure-devops) instructions to create a new repo.
 
-This document assumes one is running a current version of Ubuntu. Windows users can install the [Ubuntu Terminal](https://www.microsoft.com/store/productId/9NBLGGH4MSV6) from the Microsoft Store. The Ubuntu Terminal enables Linux command-line utilities, including bash, ssh, and git that will be useful for the following deployment. _Note: You will need the Windows Subsystem for Linux installed to use the Ubuntu Terminal on Windows_.
+If you want to manually deploy OSDU without CI/CD, you can create an empty repo yourself on the [GitHub website](https://github.com/).
 
-Ensure that the [required tools](https://github.com/microsoft/bedrock/tree/master/cluster#required-tools), are installed in your environment. Alternatively, there are [scripts](https://github.com/microsoft/bedrock/tree/master/tools/prereqs) that will install `helm`, `terraform` and `kubectl`. In this case, use `setup_kubernetes_tools.sh` and `setup_terraform.sh`. The scripts install the tools into `/usr/local/bin`.
-
-### Install the Azure CLI
-
-For information specific to your operating system, see the [Azure CLI install guide](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest). You can also use [this script](https://github.com/microsoft/bedrock/blob/master/tools/prereqs/setup_azure_cli.sh) if running on a Unix based machine.
-
-
-# Set Up Flux Manifest Repository
-
-We will deploy the Bedrock environment using the empty repo and then add a Kubernetes manifest that defines a simple Web application. The change to the repo will automatically update the deployment.
-
-To prepare the Flux manifest repository, we must:
-
-1. [Create the Flux Manifest Repository](#create-the-flux-manifest-repository)
-2. [Generate an RSA Key Pair to use as the Manifest Repository Deploy Key](#generate-an-rsa-key-pair-to-use-as-the-manifest-repository-deploy-key)
-3. [Grant Deploy Key access to the Manifest Repository](#grant-deploy-key-access-to-the-manifest-repository)
-
-## Create the Flux Manifest Repository
-
-[Create an empty git repository](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-new-repo?view=azure-devops) with a name that clearly signals that the repo is used for the Flux manifests. For example `bedrock-deploy-demo`.
-
-Flux requires that the git repository have at least one commit. Initialize the repo with an empty commit.
-
-```bash
-git commit --allow-empty -m "Initializing the Flux Manifest Repository"
-```
-
+Either way, once you have created your repo Flux requires there be at least one commit. You can create an empty commit so Flux will work correctly with your empty repo:
+`git commit --allow-empty -m "Initializing the Flux Manifest Repository"`
 When you are deploying services, you will put the manifests in providers/azure/hld-registry directory of this repo. Once you push the manifests, Flux should automatically deploy the services.
 
-## Generate an RSA Key Pair to use as the Manifest Repository Deploy Key
+### Deploying the Infrastructure: Creating Gitops and Node Keys
+In this section you will be creating two ssh keys that will be used when deploying the OSDU infrastructure. These keys will be stored in the keyvault you created earlier that has its name stored in the `SSH_VAULT_NAME` environment variable.
 
-Generate the [deploy key](https://developer.github.com/v3/guides/managing-deploy-keys/#deploy-keys) using `ssh-keygen`. The public portion of the key pair will be uploaded to GitHub as a deploy key.
-
+The first key you will be creating is the gitops key that will be used to deploy service charts that you put in your Flux repo into the Kubernetes cluster you will create:
 ```bash
 AZURE_VAULT=<common_vault_name>
 KEY_NAME=gitops-ssh-key
@@ -87,66 +65,38 @@ KEY_NAME=gitops-ssh-key
 ssh-keygen -b 4096 -t rsa -f $KEY_NAME
 
 # Save gitops-ssh-key
-az keyvault secret set --vault-name $AZURE_VAULT -n "${KEY_NAME}" -f "${KEY_NAME}"
-az keyvault secret set --vault-name $AZURE_VAULT -n "${KEY_NAME}-pub" -f "${KEY_NAME}.pub"
+az keyvault secret set --vault-name $SSH_VAULT_NAME -n "${KEY_NAME}" -f "${KEY_NAME}"
+az keyvault secret set --vault-name $SSH_VAULT_NAME -n "${KEY_NAME}-pub" -f "${KEY_NAME}.pub"
+
+# Delete keys from your local machine to be more secure
+rm $KEY_NAME
+rm $KEY_NAME.pub
 
 # Show Public gitops-ssh-key
-az keyvault secret show --vault-name $AZURE_VAULT -n "${KEY_NAME}-pub" --query value -otsv
+az keyvault secret show --vault-name $SSH_VAULT_NAME -n "${KEY_NAME}-pub" --query value -otsv
 ```
+If you are using ADO for your deployment, follow these [steps](https://docs.microsoft.com/en-us/azure/devops/repos/git/use-ssh-keys-to-authenticate?view=azure-devops&tabs=current-page#step-2--add-the-public-key-to-azure-devops-servicestfs) to add your public SSH key to your ADO environment.
 
+If you are doing a manual deployment without ADO, you now want to take the public key you just printed to the console and add it as a [deploy key](https://developer.github.com/v3/guides/managing-deploy-keys/#deploy-keys) to your Flux repo.
 
-This will create public and private keys for the Flux repository. We will assign the public key under the following heading: [Adding the Repository Key](#adding-the-repository-key). The private key is stored on the machine originating the deployment.
-
-
-## Configure Key Access in ADO
-
-The public key of the [RSA key pair](#create-an-rsa-key-pair-for-a-deploy-key-for-the-flux-repository) previously created needs to be added as a deploy key. Note: _If you do not own the repository, you will have to fork it before proceeding_.
-
-Use the contents of the Secret as shown above.
-
-
-Next, in your Azure DevOPS Project, follow these [steps](https://docs.microsoft.com/en-us/azure/devops/repos/git/use-ssh-keys-to-authenticate?view=azure-devops&tabs=current-page#step-2--add-the-public-key-to-azure-devops-servicestfs) to add your public SSH key to your ADO environment.
-
-## Create an RSA Key Pair to use as Node Key
-
-The Terraform scripts use this node key to setup log-in credentials on the nodes in the AKS cluster. We will use this key when setting up the Terraform deployment variables. Generate the Node Key:
+The second key you will be creating is node key that Terraform uses to setup log-in credentials on the nodes in the AKS cluster. We will use this key when setting up the Terraform deployment variables. Generate the Node Key:
 
 ```bash
-AZURE_VAULT=<common_vault_name>
 KEY_NAME=node-ssh-key
 
 # Generate node-ssh-key
 ssh-keygen -b 4096 -t rsa -f $KEY_NAME
 
 # Save node-ssh-key
-az keyvault secret set --vault-name $AZURE_VAULT -n "${KEY_NAME}" -f "${KEY_NAME}"
-az keyvault secret set --vault-name $AZURE_VAULT -n "${KEY_NAME}-pub" -f "${KEY_NAME}.pub"
+az keyvault secret set --vault-name $SSH_VAULT_NAME -n "${KEY_NAME}" -f "${KEY_NAME}"
+az keyvault secret set --vault-name $SSH_VAULT_NAME -n "${KEY_NAME}-pub" -f "${KEY_NAME}.pub"
+
+# Delete keys from your local machine to be more secure
+rm $KEY_NAME
+rm $KEY_NAME.pub
 
 # Save Locally Public node-ssh-key
-az keyvault secret show --vault-name $AZURE_VAULT -n "${KEY_NAME}-pub" --query value -otsv
-```
-
-
-## Configure GitOPS + Node SSH keys with Terraform Deployment
-
-
-Download the required keys from the common Key Vault
-
-```
-AZURE_VAULT=<common_vault_name>
-
-az keyvault secret show --vault-name $AZURE_VAULT -n "node-ssh-key-pub" --query value -otsv > ~/.ssh/node-ssh-key.pub
-az keyvault secret show --vault-name $AZURE_VAULT -n "gitops-ssh-key" --query value -otsv > ~/.ssh/gitops-ssh-key
-chmod 644 ~/.ssh/node-ssh-key.pub
-chmod 600 ~/.ssh/gitops-ssh-key
-```
-
-
-Update your `.env` file with the paths to your public and private SSH keys for Node and GitOPS repo access.
-
-```
-TF_VAR_ssh_public_key_file=/home/$USER/.ssh/node-ssh-key.pub
-TF_VAR_gitops_ssh_key_file=/home/$USER/.ssh/gitops-ssh-key
+az keyvault secret show --vault-name $SSH_VAULT_NAME -n "${KEY_NAME}-pub" --query value -otsv
 ```
 
 ## Deploy Infrastructure using Azure Dev Ops Pipelines
@@ -155,10 +105,26 @@ Follow the directions in [here](docs/deploy-infrastructure-using-pipelines.md).
 
 ## Manually Deploy Infrastructure
 
+You will need to have several keys configured on your local machine when using the Terraform scripts locally:
+
+```
+# get node public key and gitops private key
+az keyvault secret show --vault-name $SSH_VAULT_NAME -n "node-ssh-key-pub" --query value -otsv > ~/.ssh/node-ssh-key.pub
+az keyvault secret show --vault-name $SSH_VAULT_NAME -n "gitops-ssh-key" --query value -otsv > ~/.ssh/gitops-ssh-key
+# configure appropriate file permissions on these keys
+chmod 644 ~/.ssh/node-ssh-key.pub
+chmod 600 ~/.ssh/gitops-ssh-key
+```
+Update your `.envrc` file with the paths to your public and private SSH keys for Node and GitOPS repo access.
+
+```
+TF_VAR_ssh_public_key_file=/home/$USER/.ssh/node-ssh-key.pub
+TF_VAR_gitops_ssh_key_file=/home/$USER/.ssh/gitops-ssh-key
+```
+You are now ready to run the three Terraform deployment scripts for OSDU on Azure. You can find the instructions for the common resources, data_resources, and service_resources in their respective READMEs:
+
 Follow the directions in the [`common_resources`](configurations/common_resources/README.md) environment.
-
 Follow the directions in the [`data_resources`](configurations/data_resources/README.md) environment.
-
 Follow the directions in the [`cluster_resources`](./environments/cluster_resources/README.md) environment.
 
 
