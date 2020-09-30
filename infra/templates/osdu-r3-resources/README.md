@@ -58,7 +58,6 @@ In this section you will be creating two ssh keys that will be used when deployi
 
 The first key you will be creating is the gitops key that will be used to deploy service charts that you put in your Flux repo into the Kubernetes cluster you will create:
 ```bash
-AZURE_VAULT=<common_vault_name>
 KEY_NAME=gitops-ssh-key
 
 # Generate gitops-ssh-key
