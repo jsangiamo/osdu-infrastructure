@@ -123,8 +123,10 @@ TF_VAR_gitops_ssh_key_file=/home/$USER/.ssh/gitops-ssh-key
 You are now ready to run the three Terraform deployment scripts for OSDU on Azure. You can find the instructions for the common resources, data_resources, and service_resources in their respective READMEs:
 
 Follow the directions in the [`common_resources`](configurations/common_resources/README.md) environment.
+
 Follow the directions in the [`data_resources`](configurations/data_resources/README.md) environment.
-Follow the directions in the [`cluster_resources`](./environments/cluster_resources/README.md) environment.
+
+Follow the directions in the [`service_resources`](configurations/service_resources/README.md) environment.
 
 
 ## Interact with the Deployed Cluster
