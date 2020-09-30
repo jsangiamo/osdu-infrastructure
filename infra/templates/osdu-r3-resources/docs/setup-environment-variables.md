@@ -15,6 +15,8 @@ This page describes how to set up environment variables when deploying this infr
     export ARM_TENANT_ID="<you will fill this in>"
     export ARM_CLIENT_ID="<you will fill this in>"
     export ARM_CLIENT_SECRET="<you will fill this in>"
+# Keyvault Storing ssh Keys
+    export SSH_VAULT_NAME="<you will fill this in>"
 # Terraform State Storage Info
     export TF_VAR_resource_group_location="useast" # this is just a default value, change it if you'd like
     export TF_VAR_remote_state_account="osdutstate" # this is just a default value, change it if you'd like
