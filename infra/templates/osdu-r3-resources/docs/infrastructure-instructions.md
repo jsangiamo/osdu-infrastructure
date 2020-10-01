@@ -13,6 +13,8 @@ Either way, once you have created your repo Flux requires there be at least one 
 `git commit --allow-empty -m "Initializing the Flux Manifest Repository"`
 When you are deploying services, you will put the manifests in providers/azure/hld-registry directory of this repo. Once you push the manifests, Flux should automatically deploy the services.
 
+After creating the Flux repository, you can take its ssh url from GitHub (it will look something like git@github.com:Azure/osdu-infrastructure-flux.git) and it to your .envrc file as `TF_VAR_gitops_ssh_url`.
+
 ## Deploying the Infrastructure: Creating Gitops and Node Keys
 In this section you will be creating two ssh keys that will be used when deploying the OSDU infrastructure. These keys will be stored in the keyvault you created earlier that has its name stored in the `SSH_VAULT_NAME` environment variable.
 
