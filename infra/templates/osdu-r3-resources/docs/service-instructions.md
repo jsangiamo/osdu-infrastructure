@@ -187,14 +187,17 @@ done
 After running this script, verify that the manifests are in your flux repo in the hld-registry directory and that the azure-common manifest is there as well. After verifying that these manifests are all in place, you can deploy the service by pushing the flux repo with the new files.
 
 You can verify the services started correctly by checking on the status of the pods:
+
 `kubectl get pods --namespace=osdu`
 
 If you don't see any pods, you can check the flux logs by getting the Flux pod name (not the memcached one) and then checking those logs:
+
 `kubectl get pods --namespace=flux`
 
 `kubectl logs -f <flux_pod_name_here> --namespace=flux`
 
 If there is a pod that failed to create, you can describe the pod and check its logs to find the issue:
+
 `kubectl logs -f <pod_name_here> --namespace=osdu`
 
 `kubectl describe pod <pod_name_here> --namespace=osdu`
