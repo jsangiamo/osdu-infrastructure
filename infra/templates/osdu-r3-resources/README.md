@@ -48,11 +48,11 @@ Cloud administrators who are versed with both Cobalt templating and Kubernetes.
 1. A keyvault that you create in the Azure Portal. You may choose to put this key vault into the resource group you created for your terraform state. You should take the name of this keyvault and use it to fill in `SSH_VAULT_NAME` in your .envrc file. 
 1. A 6.8.x Elasticsearch instance with a valid ssl certificate for https. You can take the endpoint, username, and password for this instance use them to fill in `TF_VAR_elasticsearch_endpoint`, `TF_VAR_elasticsearch_username`, and `TF_VAR_elasticsearch_password` respectively in your .envrc file.
 1. An Ubuntu terminal. Windows users can install the [Ubuntu Terminal](https://www.microsoft.com/store/productId/9NBLGGH4MSV6) from the Microsoft Store. The Ubuntu Terminal enables Linux command-line utilities, including bash, ssh, and git that will be useful for the following deployment. _Note: You will need the Windows Subsystem for Linux installed to use the Ubuntu Terminal on Windows_.
-1. Recommended software versions installed via the Ubuntu terminal:
-    * Terraform 0.12.28 (required)
-    * Go version 1.12.14 (required)
-    * Helm v3.3.4
-    * Kubectl v1.19.1
+1. Software requirements:
+    * Terraform (0.12.28 required)
+    * Go version (1.12.14 required)
+    * Helm
+    * Kubectl
     * Azure CLI
 
 

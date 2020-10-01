@@ -1,9 +1,9 @@
 # Azure OSDU AKS Infrastructure Deployment Instructions
 
-This section containts the steps required to deploy OSDU into Azure.
+This section containts the steps required to deploy the OSDU infrastructure into Azure. Before completing this section, you should have completed everything under "What You Will Need"
 
 ## Deplyoing the Infrastructure: Creating Flux Repository
-In this section you will be creating an empty GitHub repository. Once your Kubernetes cluster is deployed later in this guide, it will be configured to watch this repository. Once the cluster is deployed, as you push helm charts to this repository the service those charts represent will be deployed into your cluster.
+In this section you will be creating an empty GitHub repository. Once your Kubernetes cluster is deployed later in this guide, it will be configured to watch this repository. As you push helm charts to this repository the service those charts represent will be deployed into your cluster.
 
 If you are going to be using ADO to create CI/CD pipelines for your OSDU deployment, you can follow [these](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-new-repo?view=azure-devops) instructions to create a new repo.
 
