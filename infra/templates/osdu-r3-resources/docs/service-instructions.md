@@ -5,10 +5,10 @@
 After `terraform apply` finishes for the service_resources, there is one critical output artifact: the Kubernetes config file for the deployed cluster that is generated and saved in the output directory. The default file is output/bedrock_kube_config. This file will let you interface with your deployed cluster. You can either declare this file explictly when using kubectl commands by adding `--kubeconfig output/bedrock_kube_config` (ex: `kubectl --kubeconfig output/bedrock_kube_config get pods --all-namespaces`), or you can follow [these](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/#append-home-kube-config-to-your-kubeconfig-environment-variable) instructions to configure kubectl to access your config file by default (you will need to `cp output/bedrock_kube_config ~/.kube/config`).
 
 Here are some useful commands to interact with the deployed cluster:
-* See all pods: kubectl get pods --all-namespaces
-* Get osdu pods once services are deployed: kubectl get pods --namespace=osdu
-* Describe a pod: kubectl describe \<name of pod> --namespace=\<namespace of pod>
-* Get logs from a pod: kubectl logs -f \<name of pod> --namespace=\<namespace of pod>
+* See all pods: `kubectl get pods --all-namespaces`
+* Get osdu pods once services are deployed: `kubectl get pods --namespace=osdu`
+* Describe a pod: `kubectl describe <name of pod> --namespace=<namespace of pod>`
+* Get logs from a pod: `kubectl logs -f <name of pod> --namespace=<namespace of pod>`
 
 ## Continuous Deployment
 
@@ -104,7 +104,7 @@ View the service in a browser http://localhost:8080
 
 
 ## Deploying OSDU Services
-There are six OSDU services that can be deployed in this infrastructure: storage, search, indexer-serivce, indexer-queue, entitlements, and legal. Additionally, there an azure-common service that these other services depend on. The helm charts for these service can be found in their respective repos at /devops/azure:
+There are six OSDU services that can be deployed in this infrastructure: storage, search, indexer-serivce, indexer-queue, entitlements, and legal. The helm charts for these service can be found in their respective repos at /devops/azure:
 * [Storage](https://community.opengroup.org/osdu/platform/system/storage/-/tree/master/devops/azure)
 * [Search](https://community.opengroup.org/osdu/platform/system/search-service/-/tree/master/devops/azure)
 * [Entitlements](https://community.opengroup.org/osdu/platform/security-and-compliance/entitlements-azure/-/tree/master/devops/azure)
@@ -112,7 +112,7 @@ There are six OSDU services that can be deployed in this infrastructure: storage
 * [Indexer Service](https://community.opengroup.org/osdu/platform/system/indexer-queue/-/tree/master/devops/azure)
 * [Indexer Queue](https://community.opengroup.org/osdu/platform/system/indexer-queue/-/tree/master/devops/azure)
 
-The file that will be used to fill in the required variables for azure-common should be stored in the devops folder in the root of this repo. Here is a template for the file:
+There is also an azure-common chart from which we will need to extract a manifest. The file that will be used to fill in the required variables for azure-common should be stored in the devops folder in the root of this repo. Here is a template for the file:
 ```yaml
 # <infra-root>/devops/config.yaml
 # This file contains the essential configs for the osdu on azure helm chart
@@ -185,6 +185,16 @@ do
 done
 ```
 After running this script, verify that the manifests are in your flux repo in the hld-registry directory and that the azure-common manifest is there as well. After verifying that these manifests are all in place, you can deploy the service by pushing the flux repo with the new files.
+
+You can verify the services started correctly by checking on the status of the pods:
+`kubectl get pods --namespace=osdu`
+If you don't see any pods, you can check the flux logs by getting the Flux pod name (not the memcached one) and then checking those logs:
+`kubectl get pods --namespace=flux`
+`kubectl logs -f <flux_pod_name_here> --namespace=flux`
+If there is a pod that failed to create, you can describe the pod and check its logs to find the issue:
+`kubectl logs -f <pod_name_here> --namespace=osdu`
+`kubectl describe pod <pod_name_here> --namespace=osdu`
+
 
 ## Kubernetes Portal Dashboard
 
