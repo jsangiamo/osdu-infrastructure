@@ -1,4 +1,4 @@
-# Azure OSDU AKS Service Deployment Instructions
+# OSDU R3-AKS Service Deployment Instructions
 
 ## Interact with the Deployed Cluster
 

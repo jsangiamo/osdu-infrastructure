@@ -58,11 +58,17 @@ Cloud administrators who are versed with both Cobalt templating and Kubernetes.
 
 ## Cost
 Azure environment cost ballpark [estimate](https://azure.microsoft.com/en-us/pricing/calculator/?shared-estimate=61d8d0ef1644470c9c23d6d51796b4b7). This is subject to change and is driven from the resource pricing tiers configured when the template is deployed.
-## Deploying the OSDU Infrastructure
-Once all of the prerequisites are completed, you can start the OSDU deployment process by deploying the Azure infrastructure on which the services will run. See instructions [here](docs/infrastructure-instructions.md)
 
-## Deploying OSDU Services Into Infrastructure
-Once your Azure infrastructure has been deployed, you can load the OSDU services onto that infrastructure. See instructions [here](docs/service-instructions.md)
+## Deployment Instructions
+
+### Step 1: Setting Up Flux
+Once all of the prerequisites have been completed, you will set up Flux, which is used to easily deploy services into your kubernetes cluster once it has been deployed. See instructions [here](docs/flux-instructions.md).
+
+### Step 2: Deploying the OSDU Infrastructure
+Once you have set up your Flux repo as well as your gitops and node keys, you are ready to proceed with deploying the infrastructure on which OSDU will run. See instructions [here](docs/infrastructure-instructions.md).
+
+### Step 3: Deploying OSDU Services Into Infrastructure
+Once you have deployed the infrastructure on which OSDU will run, you are ready to proceed with deploying the OSDU services into that infrastructure. See instructions [here](docs/service-instructions.md).
 
 ## License
 Copyright © Microsoft Corporation
